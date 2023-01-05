@@ -3380,7 +3380,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		if xsession != "" {
-			rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, 'VOLUME DETAIL'); ", xsession, xusername)
+			rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'VOLUME DETAIL'); ", xsession, xusername)
 			if errsses != nil {
 				// handle this error better than this
 				fmt.Print(errsses)
@@ -3476,7 +3476,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		if xsession != "" {
-			rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, 'VOLUME DETAIL'); ", xsession, xusername)
+			rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'VOLUME DETAIL'); ", xsession, xusername)
 			if errsses != nil {
 				// handle this error better than this
 				fmt.Print(errsses)
@@ -5170,7 +5170,7 @@ func setupRouter() *gin.Engine {
 			defer rowsins.Close()
 
 			if xsession != "" {
-				rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
+				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
 				if errsses != nil {
 					// handle this error better than this
 					fmt.Print(errsses)
@@ -5179,7 +5179,7 @@ func setupRouter() *gin.Engine {
 				defer rowsinsses.Close()
 			}
 
-			rows, err := db.Query(" select s.spvcode,s.spvname,d.loginid,d.password,s.branchcode,b.branchname,v.sellercode as versionupdate,'1' as forceupdate,c.week as weekno,coalesce(s.level,2) as bearer from dist_spv s join dist_branch b on b.branchcode=s.branchcode join dist_seller d on d.sellercode=s.spvcode join dist_seller v on v.sellercode=d.spvcode join calendar c on c.date=current_date  where d.loginid=$1 and d.password=$2 and s.active='1' ", xusername, xpassword)
+			rows, err := db.Query(" select s.id as spvcode,s.name  as spvname,s.username as loginid,s.password,s.branch_id ,b.remark as branchname,'1' as versionupdate,'1' as forceupdate,'1' as weekno,2 as bearer from sales s join branch b on b.id=s.branch_id where s.username = $1 and s.password=$2 and s.active='1' ", xusername, xpassword)
 			if err != nil {
 				// handle this error better than this
 				panic(err)
@@ -5272,7 +5272,7 @@ func setupRouter() *gin.Engine {
 			defer rowsins.Close()
 
 			if xsession != "" {
-				rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
+				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
 				if errsses != nil {
 					// handle this error better than this
 					fmt.Print(errsses)
@@ -5361,7 +5361,7 @@ func setupRouter() *gin.Engine {
 			}
 
 			if xsession != "" {
-				rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, 'LOGOUT'); ", xsession, xusername)
+				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGOUT'); ", xsession, xusername)
 				if errsses != nil {
 					// handle this error better than this
 					fmt.Print(errsses)
@@ -5396,7 +5396,7 @@ func setupRouter() *gin.Engine {
 			}
 
 			if xsession != "" {
-				rowsinsses, errsses := db.Query("INSERT INTO public.sv_login_session(session, sellercode, description) VALUES ($1, $2, $3); ", xsession, xusername, xdesc)
+				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, $3); ", xsession, xusername, xdesc)
 				if errsses != nil {
 					// handle this error better than this
 					fmt.Print(errsses)
