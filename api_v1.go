@@ -232,14 +232,14 @@ type colStoreMasterFullv3 struct {
 
 func sellerDivision(sellercode string) string {
 	var seller, dbselected string
-	dbselected = "SFA_OMEGA"
+	dbselected = "ex_template"
 	seller = strings.ReplaceAll(sellercode, "/", "")
 	switch seller[2:4] {
 	case "01":
-		dbselected = "SFA"
+		dbselected = "ex_template"
 		break
 	case "04":
-		dbselected = "SFA_CERES"
+		dbselected = "ex_template"
 		break
 	}
 	fmt.Println(dbselected)
