@@ -322,13 +322,6 @@ func setupRouter() *gin.Engine {
 
 		defer rows.Close()
 
-		rowsins, errs := db.Query(" INSERT INTO public.log_sv_login(usercode, created_date,deviceid) VALUES ($1, now(),$2); ", strings.Replace(xusername, "/", "", 3), "-")
-		if errs != nil {
-			// handle this error better than this
-			panic(errs)
-		}
-		defer rowsins.Close()
-
 		var sellercode string
 		var sellername string
 		var results []dataSales
@@ -5161,14 +5154,6 @@ func setupRouter() *gin.Engine {
 				log.Fatal(err)
 			}
 
-			rowsins, errs := db.Query(" INSERT INTO public.log_sv_login(usercode, created_date,deviceid) VALUES ($1, now(),$2); ", xusername, xdeviceid)
-			if errs != nil {
-				// handle this error better than this
-				panic(errs)
-			}
-
-			defer rowsins.Close()
-
 			if xsession != "" {
 				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
 				if errsses != nil {
@@ -5263,13 +5248,6 @@ func setupRouter() *gin.Engine {
 				log.Fatal(err)
 			}
 
-			rowsins, errs := db.Query(" INSERT INTO public.log_sv_login(usercode, created_date,deviceid) VALUES ($1, now(),$2); ", xusername, xdeviceid)
-			if errs != nil {
-				// handle this error better than this
-				panic(errs)
-			}
-
-			defer rowsins.Close()
 
 			if xsession != "" {
 				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
