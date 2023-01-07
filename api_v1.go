@@ -4924,7 +4924,7 @@ func setupRouter() *gin.Engine {
 
 			var sqlstring string
 
-			sqlstring = "  	SELECT week FROM public.calendar where date=now()::date		"
+			sqlstring = "  	SELECT week FROM public.calendar where dated=now()::date		"
 
 			rowsweek, errweek := db.Query(sqlstring)
 			if errweek != nil {
