@@ -4944,13 +4944,13 @@ func setupRouter() *gin.Engine {
 			}
 
 			if week == "1" {
-				weekstr = " and wk1='1' "
+				weekstr = "wk1"
 			} else if week == "2" {
-				weekstr = " and wk2='1' "
+				weekstr = "wk2"
 			} else if week == "3" {
-				weekstr = " and wk3='1' "
+				weekstr = " wk3 "
 			} else if week == "4" {
-				weekstr = " and wk4='1' "
+				weekstr = "wk4"
 			}
 
 			defer db.Close()
