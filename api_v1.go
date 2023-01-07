@@ -4914,7 +4914,7 @@ func setupRouter() *gin.Engine {
 		var weekstr string
 		weekstr = " 1=1 "
 		xusername := c.PostForm("spvcode")
-		if len(xusername) > 5 {
+		if len(xusername) > 3 {
 			psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 			db, err := sql.Open("postgres", psqlInfo)
