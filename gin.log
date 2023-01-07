@@ -4,6 +4,6 @@
  - using env:	export GIN_MODE=release
  - using code:	gin.SetMode(gin.ReleaseMode)
 
-[GIN] 2023/01/05 - 20:29:14 | 200 |            0s |             ::1 | GET      /ping
-[GIN] 2023/01/05 - 20:29:15 | 404 |            0s |             ::1 | GET      /favicon.ico
-[GIN] 2023/01/05 - 20:29:32 | 200 |            0s |             ::1 | GET      /ping
+[GIN] 2023/01/08 - 06:32:24 | 200 |            0s |             ::1 | GET      /ping
+[GIN] 2023/01/08 - 06:32:24 | 404 |            0s |             ::1 | GET      /favicon.ico
+[GIN] 2023/01/08 - 06:32:28 | 404 |            0s |             ::1 | GET      /login
