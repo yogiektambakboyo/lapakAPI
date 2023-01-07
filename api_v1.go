@@ -281,11 +281,6 @@ func setupRouter() *gin.Engine {
 		c.File("/home/yogi/go/src/github.com/pstp-api/app-release.apk")
 	})
 
-	authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
-		"foo":  "bar", // user:foo password:bar
-		"manu": "123", // user:manu password:123
-	}))
-	
 	r.POST("/getSalesAll", func(c *gin.Context) {
 		xusername := c.PostForm("spvcode")
 
