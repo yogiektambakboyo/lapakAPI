@@ -285,21 +285,7 @@ func setupRouter() *gin.Engine {
 		"foo":  "bar", // user:foo password:bar
 		"manu": "123", // user:manu password:123
 	}))
-
-	authorized.POST("admin", func(c *gin.Context) {
-		user := c.MustGet(gin.AuthUserKey).(string)
-
-		// Parse JSON
-		var json struct {
-			Value string `json:"value" binding:"required"`
-		}
-
-		if c.Bind(&json) == nil {
-			db[user] = json.Value
-			c.JSON(http.StatusOK, http.StatusOK)
-		}
-	})
-
+	
 	r.POST("/getSalesAll", func(c *gin.Context) {
 		xusername := c.PostForm("spvcode")
 
@@ -5225,102 +5211,6 @@ func setupRouter() *gin.Engine {
 	})
 	// End Login
 	
-	r.POST("/login_v2", func(c *gin.Context) {
-
-		xusername := c.PostForm("username")
-		xpassword := c.PostForm("password")
-		xdeviceid := c.PostForm("deviceid")
-		xversion := c.PostForm("version")
-		xsession := c.PostForm("session")
-		dbname = sellerDivision(xusername)
-
-		xuseragent := c.Request.Header.Get("User-Agent")
-
-		var result []resultJSON
-
-		if xuseragent == "5uPErV1sIon_8CP_m0biL3" {
-			fmt.Printf("username: %s; password: %s; deviceid: %s; version is: %s", xusername, xpassword, xdeviceid, xversion)
-
-			psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-			db, err := sql.Open("postgres", psqlInfo)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-
-			if xsession != "" {
-				rowsinsses, errsses := db.Query("INSERT INTO public.login_session(session, sellercode, description) VALUES ($1, $2, 'LOGIN'); ", xsession, xusername)
-				if errsses != nil {
-					// handle this error better than this
-					fmt.Print(errsses)
-				}
-
-				defer rowsinsses.Close()
-			}
-
-			rows, err := db.Query(" select s.spvcode,s.spvname,d.loginid,d.password,s.branchcode,b.branchname,v.sellercode as versionupdate,'1' as forceupdate,c.week as weekno,coalesce(s.level,2) as bearer from dist_spv s join dist_branch b on b.branchcode=s.branchcode join dist_seller d on d.sellercode=s.spvcode join dist_seller v on v.sellercode=d.spvcode join calendar c on c.date=current_date  where s.loginid=$1 and s.password=md5($2) and s.active='1' ", xusername, xpassword)
-			if err != nil {
-				// handle this error better than this
-				panic(err)
-			}
-
-			defer rows.Close()
-			var spvcode string
-			var spvname string
-			var loginid string
-			var password string
-			var branchcode string
-			var branchname string
-			var versionupdate string
-			var forceupdate string
-			var weekno string
-			var bearer string
-			var counter string
-			counter = "0"
-
-			for rows.Next() {
-				err = rows.Scan(&spvcode, &spvname, &loginid, &password, &branchcode, &branchname, &versionupdate, &forceupdate, &weekno, &bearer)
-				if err != nil {
-					// handle this error
-					panic(err)
-				}
-				counter = "1"
-			}
-
-			// Parse JSON
-
-			currentTime := time.Now()
-
-			result = []resultJSON{
-				resultJSON{
-					Username:      loginid,
-					Password:      password,
-					Deviceid:      xdeviceid,
-					Version:       xversion,
-					Status:        counter,
-					Name:          spvname,
-					DownloadDate:  currentTime.Format("2006-01-02"),
-					BranchID:      branchcode,
-					BranchName:    branchname,
-					Code:          spvcode,
-					VersionUpdate: versionupdate,
-					ForceUpdate:   forceupdate,
-					WeekNo:        weekno,
-					Bearer:        bearer,
-				},
-			}
-
-			defer db.Close()
-		} else {
-
-		}
-
-		c.JSON(http.StatusOK, result)
-	})
-	// End Login
-
-
 	// Begin Logout
 	r.POST("/logout", func(c *gin.Context) {
 
