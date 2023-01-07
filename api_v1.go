@@ -5150,7 +5150,7 @@ func setupRouter() *gin.Engine {
 				defer rowsinsses.Close()
 			}
 
-			rows, err := db.Query(" select s.id as spvcode,s.name  as spvname,s.username as loginid,s.password,s.branch_id ,b.remark as branchname,'1' as versionupdate,'1' as forceupdate,'1' as weekno,2 as bearer from sales s join branch b on b.id=s.branch_id where s.username = $1 and s.password=$2 and s.active='1' ", xusername, xpassword)
+			rows, err := db.Query(" select s.id as spvcode,s.name  as spvname,s.username as loginid,s.password,s.branch_id ,b.remark as branchname,'1' as versionupdate,'1' as forceupdate,'1' as weekno,2 as bearer from sales s join branch b on b.id=s.branch_id where upper(s.username) = $1 and s.password=$2 and s.active='1' ", xusername, xpassword)
 			if err != nil {
 				// handle this error better than this
 				panic(err)
