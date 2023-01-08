@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +25,15 @@ var dbname = "ex_template"
 
 var db = make(map[string]string)
 
+type activeTrip struct {
+	Dated  string `json:"dated"`
+	Time_start   string `json:"time_start"`
+	Time_end   string `json:"time_end"`
+	Georeverse     string `json:"georeverse"`
+	Duration string `json:"duration"`
+	Longitude   string `json:"longitude"`
+	Latitude    string `json:"latitude"`
+}
 
 type storeMaster struct {
 	Sellercode  string `json:"Sellercode"`
@@ -93,18 +101,10 @@ type masterData struct {
 
 
 func sellerDivision(sellercode string) string {
-	var seller, dbselected string
+	var dbselected string
 	dbselected = "ex_template"
-	seller = strings.ReplaceAll(sellercode, "/", "")
-	switch seller[2:4] {
-	case "01":
-		dbselected = "ex_template"
-		break
-	case "04":
-		dbselected = "ex_template"
-		break
-	}
 	fmt.Println(dbselected)
+	fmt.Println(sellercode)
 	return dbselected
 }
 
@@ -223,6 +223,62 @@ func setupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, result)
 	})
 	// End Login
+
+	r.POST("/getActiveTrip", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " SELECT st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and active = 1 "
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var dated string
+		var time_start string
+		var time_end string
+		var longitude string
+		var latitude string
+		var georeverse string
+		var duration string
+
+		var results []activeTrip
+
+		for rows.Next() {
+			err = rows.Scan(&dated,&time_start,&time_end,&longitude,&latitude,&georeverse,&duration)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := activeTrip{
+				Dated: dated,
+				Time_start: time_start,
+				Time_end: time_end,
+				Longitude: longitude,
+				Latitude: latitude,
+				Georeverse: georeverse,
+				Duration: duration,
+			}
+			results = append(results, result)
+		}
+
+		defer db.Close()
+
+		c.JSON(http.StatusOK, results)
+
+	})
 
 	
 	r.POST("/getWeekNo", func(c *gin.Context) {
