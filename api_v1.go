@@ -358,6 +358,58 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.POST("/insertStopActiveTrip", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xlongitude := c.PostForm("longitude")
+		xlatitude := c.PostForm("latitude")
+		xgeoreverse := c.PostForm("georeverse")
+		xtrip_id := c.PostForm("trip_id")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " INSERT INTO public.sales_trip_detail (trip_id, longitude, latitude, georeverse,created_by, created_at) VALUES($1, $2, $3, $4, $5, now()); "
+
+		rows, err := db.Query(sqlstring,xtrip_id,xlongitude,xlatitude,xgeoreverse,xsales_id)
+		defer rows.Close()
+
+
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert trip detail",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			sqlstring = " UPDATE public.sales_trip set active=0,time_end=now(),updated_at=now(),updated_by=$1 WHERE id=$2; "
+			rowsupd, errupd := db.Query(sqlstring,xsales_id,xtrip_id)
+
+			if errupd != nil {
+				log.Fatal(err)
+			}
+
+			defer rowsupd.Close()
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	
 	r.POST("/getWeekNo", func(c *gin.Context) {
 
