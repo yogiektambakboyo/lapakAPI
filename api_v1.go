@@ -533,6 +533,21 @@ func setupRouter() *gin.Engine {
 
 		c.String(http.StatusOK, weekstr)
 	})
+
+	r.POST("/uploadPhoto", func(c *gin.Context) {
+		// single file
+		file, _ := c.FormFile("uploaded_file")
+		log.Println(file.Filename)
+
+		// Upload the file to specific dst.
+		path := "/home/yogiaditya0130/lapakAPI/images/" + file.Filename
+		err := c.SaveUploadedFile(file, path)
+		if(err != nil){
+			log.Fatal(err)
+		}
+
+		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+	})
 	
 	
 	return r
