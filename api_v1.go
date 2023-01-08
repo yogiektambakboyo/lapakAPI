@@ -509,6 +509,7 @@ func setupRouter() *gin.Engine {
 
 	r.POST("/insertTrip", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
+		xsales_idx := c.PostForm("sales_id")
 		xlongitude := c.PostForm("longitude")
 		xlatitude := c.PostForm("latitude")
 		xgeoreverse := c.PostForm("georeverse")
@@ -534,9 +535,9 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err1)
 		}
 
-		sqlstring = "INSERT INTO public.sales_trip(dated, sales_id, time_start, time_end, active, created_by, created_at, photo, notes) VALUES(now()::date, $1, now(), now(), '1', $1, now(), $2, $3);"
+		sqlstring = "INSERT INTO public.sales_trip(dated, sales_id, time_start, time_end, active, created_by, created_at, photo, notes) VALUES(now()::date, $1, now(), now(), '1', $2, now(), $3, $4);"
 
-		rows2, err2 := db.Query(sqlstring,xsales_id,xphoto,xnotes)
+		rows2, err2 := db.Query(sqlstring,xsales_id,xsales_idx,xphoto,xnotes)
 		defer rows2.Close()
 		if err2 != nil {
 			log.Fatal(err2)
