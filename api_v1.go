@@ -420,6 +420,7 @@ func setupRouter() *gin.Engine {
 		var id string
 		var name string
 		var created_at string
+		var address string
 		var is_approved string
 
 		var results []storeReg
@@ -427,7 +428,7 @@ func setupRouter() *gin.Engine {
 		counter := 0
 
 		for rows.Next() {
-			err = rows.Scan(&id,&name,&created_at,&is_approved)
+			err = rows.Scan(&id,&name,&address,&created_at,&is_approved)
 			if err != nil {
 				// handle this error
 				panic(err)
@@ -435,8 +436,9 @@ func setupRouter() *gin.Engine {
 
 			result := storeReg{
 				Id: id,
-				Address: name,
-				Name: created_at,
+				Address: address,
+				CreatedAt : created_at,
+				Name: name,
 				IsApproved: is_approved,
 			}
 			results = append(results, result)
