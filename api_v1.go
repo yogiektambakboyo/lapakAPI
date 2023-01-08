@@ -540,6 +540,63 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.POST("/insertReg", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xname := c.PostForm("name")
+		xaddress := c.PostForm("address")
+		xphone_no := c.PostForm("phone_no")
+		xcity := c.PostForm("city")
+		xnotes := c.PostForm("notes")
+		xcredit_limit := c.PostForm("credit_limit")
+		xemail := c.PostForm("email")
+		xhandphone := c.PostForm("handphone")
+		xwhatsapp_no := c.PostForm("whatsapp_no")
+		xcitizen_id := c.PostForm("citizen_id")
+		xtax_id := c.PostForm("tax_id")
+		xcontact_person := c.PostForm("contact_person")
+		xtype := c.PostForm("type")
+		xcontact_person_job_position := c.PostForm("contact_person_job_position")
+		xclasification := c.PostForm("clasification")
+		xlongitude := c.PostForm("longitude")
+		xlatitude := c.PostForm("latitude")
+		xcontact_person_level := c.PostForm("contact_person_level")
+		xphoto := c.PostForm("photo")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " INSERT INTO public.customers_registration(name, address, phone_no, membership_id, abbr, branch_id, created_at, sales_id, city, notes, credit_limit, longitude, latitude, email, handphone, whatsapp_no, citizen_id, tax_id, contact_person, type, clasification, contact_person_job_position, contact_person_level, is_approved,photo) VALUES($1, $2, $3, 1, '', 1, now(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, 0,$20);"
+
+		rows, err := db.Query(sqlstring,xname,xaddress,xphone_no,xsales_id,xcity,xnotes,xcredit_limit,xlongitude,xlatitude,xemail,xhandphone,xwhatsapp_no,xcitizen_id,xtax_id,xcontact_person,xtype,xclasification,xcontact_person_job_position,xcontact_person_level,xphoto)
+		defer rows.Close()
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert trip detail",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	r.POST("/insertActiveTripDetail", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
 		xlongitude := c.PostForm("longitude")
