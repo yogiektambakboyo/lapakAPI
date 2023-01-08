@@ -306,6 +306,81 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.POST("/getActiveTripAll", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " SELECT st.id,st.dated,st.time_start,st.time_end,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st where st.dated = now()::date and st.sales_id = $1 order by id asc"
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var id string
+		var dated string
+		var time_start string
+		var time_end string
+		var longitude string
+		var latitude string
+		var georeverse string
+		var duration string
+		var counter int
+
+		var results []activeTrip
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&id,&dated,&time_start,&time_end,&duration)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := activeTrip{
+				Id: id,
+				Dated: dated,
+				Time_start: time_start,
+				Time_end: time_end,
+				Longitude: longitude,
+				Latitude: latitude,
+				Georeverse: georeverse,
+				Duration: duration,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colActiveTrip{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	r.POST("/insertActiveTripDetail", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
 		xlongitude := c.PostForm("longitude")
