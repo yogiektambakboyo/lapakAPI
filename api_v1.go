@@ -531,7 +531,7 @@ func setupRouter() *gin.Engine {
 		rows1, err1 := db.Query(sqlstring,xsales_id)
 		defer rows1.Close()
 		if err1 != nil {
-
+			log.Fatal(err1)
 		}
 
 		sqlstring = "INSERT INTO public.sales_trip(dated, sales_id, time_start, time_end, active, created_by, created_at, photo, notes) VALUES(now()::date, $1, now(), now(), '1', $2, now(), $3, $4);"
@@ -539,7 +539,7 @@ func setupRouter() *gin.Engine {
 		rows2, err2 := db.Query(sqlstring,xsales_id,xsales_id,xphoto,xnotes)
 		defer rows2.Close()
 		if err2 != nil {
-
+			log.Fatal(err2)
 		}
 
 		sqlstring = "SELECT max(id) as id from public.sales_trip where sales_id=$1 and dated=now()::date;"
@@ -547,7 +547,7 @@ func setupRouter() *gin.Engine {
 		rows3, err3 := db.Query(sqlstring,xsales_id)
 		defer rows3.Close()
 		if err3 != nil {
-
+			log.Fatal(err3)
 		}
 
 		var lastid string;
