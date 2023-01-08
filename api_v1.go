@@ -395,7 +395,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " SELECT st.id,to_char(st.dated,'dd-mm-YYYY') as dated,to_char(st.time_start,'dd-mm-YYYY HH24:mi') as time_start,to_char(st.time_end,'dd-mm-YYYY HH24:mi')  as time_end,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st where st.dated = now()::date and st.sales_id = $1 and sd.trip_id=$2 order by time_start asc"
+		sqlstring = " SELECT st.id,st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and active = 1 and sd.trip_id=$2 order by time_start asc"
 
 		rows, err := db.Query(sqlstring,xsales_id,xtrip_id)
 		if err != nil {
