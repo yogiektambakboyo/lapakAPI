@@ -408,7 +408,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select cr.id,cr.name,cr.address,to_char(cr.created_at,'dd-mm-YYYY HH24:mI:ss') as created_at ,cr.is_approved  from customers_registration cr where cr.is_approved = 0"
+		sqlstring = " select cr.id,cr.name,cr.address,to_char(cr.created_at,'dd-mm-YYYY HH24:mI:ss') as created_at ,cr.is_approved  from customers_registration cr where cr.is_approved = 0 and sales_id=$1"
 
 		rows, err := db.Query(sqlstring,xsales_id)
 		if err != nil {
