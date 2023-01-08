@@ -395,7 +395,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " SELECT st.id,st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,to_char(sd.created_at,'dd-MM-YYYY HH24:MI:ss') duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and sd.trip_id=$2 order by time_start asc"
+		sqlstring = " git ad"
 
 		rows, err := db.Query(sqlstring,xsales_id,xtrip_id)
 		if err != nil {
@@ -497,6 +497,83 @@ func setupRouter() *gin.Engine {
 			}
 
 			defer rowsupd.Close()
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/insertTrip", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xlongitude := c.PostForm("longitude")
+		xlatitude := c.PostForm("latitude")
+		xgeoreverse := c.PostForm("georeverse")
+		xphoto := c.PostForm("photo")
+		xnotes := c.PostForm("notes")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " update sales_trip set active = 0 where sales_id = $1; "
+
+		rows1, err1 := db.Query(sqlstring,xsales_id)
+		defer rows1.Close()
+		if err1 != nil {
+
+		}
+
+		sqlstring = "INSERT INTO public.sales_trip(dated, sales_id, time_start, time_end, active, created_by, created_at, photo, notes) VALUES(now()::date, $1, now(), now(), '1', $2, now(), $3, $4);"
+
+		rows2, err2 := db.Query(sqlstring,xsales_id,xsales_id,xphoto,xnotes)
+		defer rows2.Close()
+		if err2 != nil {
+
+		}
+
+		sqlstring = "SELECT max(id) as id from public.sales_trip where sales_id=$1 and dated=now()::date;"
+
+		rows3, err3 := db.Query(sqlstring,xsales_id)
+		defer rows3.Close()
+		if err3 != nil {
+
+		}
+
+		var lastid string;
+
+		for rows3.Next() {
+			errd := rows3.Scan(&lastid)
+			if errd != nil {
+				// handle this error
+				panic(errd)
+			}
+		}
+
+		sqlstring = " INSERT INTO public.sales_trip_detail (trip_id, longitude, latitude, georeverse,created_by, created_at) VALUES($1, $2, $3, $4, $5, now()); "
+
+		rows, err := db.Query(sqlstring,lastid,xlongitude,xlatitude,xgeoreverse,xsales_id)
+		defer rows.Close()
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert trip detail",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
 			defer db.Close()
 			colInit := colActiveTrip{
 				Message:     "OK",
