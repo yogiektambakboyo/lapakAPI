@@ -395,7 +395,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " git ad"
+		sqlstring = " SELECT st.id,st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,to_char(sd.created_at,'dd-MM-YYYY HH24:MI:ss') duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and sd.trip_id=$2 order by time_start asc"
 
 		rows, err := db.Query(sqlstring,xsales_id,xtrip_id)
 		if err != nil {
