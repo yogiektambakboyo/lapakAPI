@@ -578,6 +578,7 @@ func setupRouter() *gin.Engine {
 		rows, err := db.Query(sqlstring,xname,xaddress,xphone_no,xsales_id,xcity,xnotes,xcredit_limit,xlongitude,xlatitude,xemail,xhandphone,xwhatsapp_no,xcitizen_id,xtax_id,xcontact_person,xtype,xclasification,xcontact_person_job_position,xcontact_person_level,xphoto)
 		defer rows.Close()
 		if err != nil {
+			log.Fatal(err)
 			defer db.Close()
 			colInit := colActiveTrip{
 				Message:  "Failed insert trip detail",
