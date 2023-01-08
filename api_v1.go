@@ -16,7 +16,7 @@ import (
 
 const (
 	host     = "localhost"
-	port     = 5432
+	port     = 5433
 	user     = "postgres"
 	password = "postgres"
 )
@@ -33,6 +33,12 @@ type activeTrip struct {
 	Duration string `json:"duration"`
 	Longitude   string `json:"longitude"`
 	Latitude    string `json:"latitude"`
+}
+
+type colActiveTrip struct {
+	Message     string        `json:"message"`
+	Data []activeTrip `json:"data"`
+	Status      string        `json:"status"`
 }
 
 type storeMaster struct {
@@ -253,8 +259,11 @@ func setupRouter() *gin.Engine {
 		var latitude string
 		var georeverse string
 		var duration string
+		var counter int
 
 		var results []activeTrip
+
+		counter = 0
 
 		for rows.Next() {
 			err = rows.Scan(&dated,&time_start,&time_end,&longitude,&latitude,&georeverse,&duration)
@@ -272,12 +281,26 @@ func setupRouter() *gin.Engine {
 				Duration: duration,
 			}
 			results = append(results, result)
+			counter = counter + 1
 		}
 
 		defer db.Close()
 
-		c.JSON(http.StatusOK, results)
-
+		if(counter>0){
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colActiveTrip{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
 	})
 
 	
