@@ -328,8 +328,6 @@ func setupRouter() *gin.Engine {
 
 		rows, err := db.Query(sqlstring,xtrip_id,xlongitude,xlatitude,xgeoreverse,xsales_id)
 		defer rows.Close()
-
-
 		if err != nil {
 			defer db.Close()
 			colInit := colActiveTrip{
