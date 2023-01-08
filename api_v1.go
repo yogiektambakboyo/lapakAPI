@@ -21,7 +21,7 @@ const (
 	password = "postgres"
 )
 
-var dbname = "ex_template"
+var dbname = "smd"
 
 var db = make(map[string]string)
 
@@ -123,7 +123,7 @@ type masterData struct {
 
 func sellerDivision(sellercode string) string {
 	var dbselected string
-	dbselected = "ex_template"
+	dbselected = "smd"
 	fmt.Println(dbselected)
 	fmt.Println(sellercode)
 	return dbselected
