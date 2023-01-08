@@ -4,4 +4,3 @@
  - using env:	export GIN_MODE=release
  - using code:	gin.SetMode(gin.ReleaseMode)
 
-[GIN] 2023/01/08 - 09:08:12 | 200 |    229.2352ms |       127.0.0.1 | POST     /getActiveTrip

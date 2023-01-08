@@ -33,6 +33,7 @@ type activeTrip struct {
 	Duration string `json:"duration"`
 	Longitude   string `json:"longitude"`
 	Latitude    string `json:"latitude"`
+	Id    string `json:"id"`
 }
 
 type colActiveTrip struct {
@@ -243,7 +244,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " SELECT st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and active = 1 "
+		sqlstring = " SELECT st.id,st.dated,st.time_start,st.time_end,sd.longitude,sd.latitude,sd.georeverse,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st join sales_trip_detail sd on sd.trip_id = st.id where st.dated = now()::date and st.sales_id = $1 and active = 1 "
 
 		rows, err := db.Query(sqlstring,xsales_id)
 		if err != nil {
@@ -252,6 +253,7 @@ func setupRouter() *gin.Engine {
 
 		defer rows.Close()
 
+		var id string
 		var dated string
 		var time_start string
 		var time_end string
@@ -266,12 +268,13 @@ func setupRouter() *gin.Engine {
 		counter = 0
 
 		for rows.Next() {
-			err = rows.Scan(&dated,&time_start,&time_end,&longitude,&latitude,&georeverse,&duration)
+			err = rows.Scan(&id,&dated,&time_start,&time_end,&longitude,&latitude,&georeverse,&duration)
 			if err != nil {
 				// handle this error
 				panic(err)
 			}
 			result := activeTrip{
+				Id: id,
 				Dated: dated,
 				Time_start: time_start,
 				Time_end: time_end,
