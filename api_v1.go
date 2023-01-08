@@ -52,6 +52,20 @@ type storeMaster struct {
 	Latitude    string `json:"Latitude"`
 }
 
+type storeReg struct {
+	Id   string `json:"id"`
+	Address     string `json:"address"`
+	Name string `json:"name"`
+	IsApproved   string `json:"is_approved"`
+	CreatedAt    string `json:"created_at"`
+}
+
+type colStoreReg struct {
+	Message     string        `json:"message"`
+	Data []storeReg `json:"data"`
+	Status      string        `json:"status"`
+}
+
 type storeMasterFullv3 struct {
 	Sellercode  string `json:"sellercode"`
 	Storecode   string `json:"storecode"`
@@ -373,6 +387,73 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, colInit)
 		}else{
 			colInit := colActiveTrip{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/getStoreRegAll", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " SELECT st.id,to_char(st.dated,'dd-mm-YYYY') as dated,to_char(st.time_start,'dd-mm-YYYY HH24:mi') as time_start,to_char(st.time_end,'dd-mm-YYYY HH24:mi')  as time_end,lpad(EXTRACT(HOUR  FROM (st.time_end  - st.time_start))::text, 2, '0') ||':'||lpad(EXTRACT(MINUTE  FROM (st.time_end  - st.time_start))::text, 2, '0') as duration  from sales_trip st where st.dated = now()::date and st.sales_id = $1 order by id asc"
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var id string
+		var name string
+		var created_at string
+		var is_approved string
+
+		var results []storeReg
+
+		counter := 0
+
+		for rows.Next() {
+			err = rows.Scan(&id,&name,&created_at,&is_approved)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+
+			result := storeReg{
+				Id: id,
+				Address: name,
+				Name: created_at,
+				IsApproved: is_approved,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colStoreReg{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colStoreReg{
 				Message:     "Failed, Data not found",
 				Data: results,
 				Status:      "0",
