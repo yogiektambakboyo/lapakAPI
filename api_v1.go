@@ -149,7 +149,18 @@ func setupRouter() *gin.Engine {
 		c.String(http.StatusOK, "pongs")
 	})
 
-	
+	// Ping test
+	r.GET("/getImage/:image", func(c *gin.Context) {
+		imagefile := c.Params.ByName("image")
+		path := "/home/yogiaditya0130/lapakAPI/images/" + imagefile
+		//Seems this headers needed for some browsers (for example without this headers Chrome will download files as txt)
+		c.Header("Content-Description", "File Transfer")
+		c.Header("Content-Transfer-Encoding", "binary")
+		c.Header("Content-Disposition", "attachment; filename="+imagefile )
+		c.Header("Content-Type", "application/octet-stream")
+		c.File(path)
+	})
+
 	// Login
 	r.POST("/login", func(c *gin.Context) {
 
