@@ -843,7 +843,7 @@ func setupRouter() *gin.Engine {
 		log.Println(file.Filename)
 
 		// Upload the file to specific dst.
-		path := "/var/www/html/lapakERP/public/images/smd-image/" + file.Filename
+		path := "/home/yogiaditya0130/lapakAPI/images/" + file.Filename
 		err := c.SaveUploadedFile(file, path)
 		if(err != nil){
 			log.Fatal(err)
