@@ -857,7 +857,7 @@ func setupRouter() *gin.Engine {
 
 	
 
-		sqlstring = "INSERT INTO public.sales_visit(dated, sales_id, customer_id, time_start, time_end, created_at, created_by, georeverse, longitude, latitude, photo) VALUES(now()::date, $1, $2, now(), now(), now(), $3, $4, $5, $6, %7);"
+		sqlstring = "INSERT INTO public.sales_visit(dated, sales_id, customer_id, time_start, time_end, created_at, created_by, georeverse, longitude, latitude, photo) VALUES(now()::date, $1, $2, now(), now(), now(), $3, $4, $5, $6, $7);"
 
 		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id,xsales_idx,xgeoreverse,xlongitude,xlatitude,xphoto)
 		defer rows.Close()
