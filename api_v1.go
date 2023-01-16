@@ -835,6 +835,59 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.POST("/insertStoreVisit", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xsales_idx := c.PostForm("sales_id")
+		xcustomer_id := c.PostForm("customer_id")
+		xlongitude := c.PostForm("longitude")
+		xlatitude := c.PostForm("latitude")
+		xgeoreverse := c.PostForm("georeverse")
+		xphoto := c.PostForm("photo")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+	
+
+		sqlstring = "INSERT INTO public.sales_visit(dated, sales_id, customer_id, time_start, time_end, created_at, created_by, georeverse, longitude, latitude, photo) VALUES(now()::date, $1, $2, now(), now(), now(), $3, $4, $5, $6, %7);"
+
+		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id,xsales_idx,xgeoreverse,xlongitude,xlatitude,xphoto)
+		defer rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+
+
+		defer rows.Close()
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert visit",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	r.POST("/insertStopActiveTrip", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
 		xlongitude := c.PostForm("longitude")
