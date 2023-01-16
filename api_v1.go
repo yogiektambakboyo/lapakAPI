@@ -36,9 +36,27 @@ type activeTrip struct {
 	Id    string `json:"id"`
 }
 
+type activeVisit struct {
+	Dated  string `json:"dated"`
+	Time_start   string `json:"time_start"`
+	Time_end   string `json:"time_end"`
+	Georeverse     string `json:"georeverse"`
+	Longitude   string `json:"longitude"`
+	Latitude    string `json:"latitude"`
+	Id    string `json:"id"`
+	Customer_Id    string `json:"customer_id"`
+	Is_checkout    string `json:"is_checkout"`
+}
+
 type colActiveTrip struct {
 	Message     string        `json:"message"`
 	Data []activeTrip `json:"data"`
+	Status      string        `json:"status"`
+}
+
+type colActiveVisit struct {
+	Message     string        `json:"message"`
+	Data []activeVisit `json:"data"`
 	Status      string        `json:"status"`
 }
 
@@ -341,6 +359,83 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, colInit)
 		}else{
 			colInit := colActiveTrip{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/getVisitActive", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select id,dated,customer_id,time_start,time_end,georeverse,longitude,latitude,coalesce(is_checkout,0) as is_checkout  from sales_visit sv where sv.dated = now()::date and customer_id = $1 and sales_id =$2 "
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var id string
+		var dated string
+		var time_start string
+		var time_end string
+		var longitude string
+		var latitude string
+		var georeverse string
+		var customer_id string
+		var is_checkout string
+		var counter int
+
+		var results []activeVisit
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&id,&dated,&customer_id,&time_start,&time_end,&georeverse,&longitude,&latitude,&is_checkout)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := activeVisit{
+				Id: id,
+				Dated: dated,
+				Time_start: time_start,
+				Time_end: time_end,
+				Longitude: longitude,
+				Latitude: latitude,
+				Georeverse: georeverse,
+				Customer_Id: customer_id,
+				Is_checkout: is_checkout,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colActiveVisit{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colActiveVisit{
 				Message:     "Failed, Data not found",
 				Data: results,
 				Status:      "0",
@@ -860,6 +955,54 @@ func setupRouter() *gin.Engine {
 		sqlstring = "INSERT INTO public.sales_visit(dated, sales_id, customer_id, time_start, time_end, created_at, created_by, georeverse, longitude, latitude, photo) VALUES(now()::date, $1, $2, now(), now(), now(), $3, $4, $5, $6, $7);"
 
 		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id,xsales_idx,xgeoreverse,xlongitude,xlatitude,xphoto)
+		defer rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+
+
+		defer rows.Close()
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert visit",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/updateVisitActive", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xcustomer_id := c.PostForm("customer_id")
+		xis_checkout := c.PostForm("is_checkout")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+	
+		sqlstring = "update public.sales_visit set time_end=now(),is_checkout=$1 where customer_id=$2 and dated=now()::date and sales_id=$3;"
+
+		rows, err := db.Query(sqlstring,xis_checkout,xcustomer_id,xsales_id)
 		defer rows.Close()
 		if err != nil {
 			log.Fatal(err)
