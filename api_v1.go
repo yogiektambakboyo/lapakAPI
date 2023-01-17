@@ -381,7 +381,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select id,dated,customer_id,time_start,time_end,georeverse,longitude,latitude,coalesce(is_checkout,0) as is_checkout  from sales_visit sv where sv.dated = now()::date and customer_id = $1 and sales_id =$2 "
+		sqlstring = " select id,dated,customer_id,to_char(time_start,'dd-mm-YYYY HH24:mi') as time_start,to_char(time_end,'dd-mm-YYYY HH24:mi')  as time_end,georeverse,longitude,latitude,coalesce(is_checkout,0) as is_checkout  from sales_visit sv where sv.dated = now()::date and customer_id = $1 and sales_id =$2 "
 
 		rows, err := db.Query(sqlstring,xcustomer_id,xsales_id)
 		if err != nil {
