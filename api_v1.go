@@ -1001,7 +1001,7 @@ func setupRouter() *gin.Engine {
 		var sqlstring string
 
 	
-		sqlstring = "update public.sales_visit set time_end=now(),is_checkout=$1 where customer_id=$2 and dated=now()::date and sales_id=$3;"
+		sqlstring = "update public.sales_visit set time_end=now(),is_checkout=$1 where customer_id=$2 and dated=now()::date and sales_id=$3 and coalesce(is_checkout,0)<>1;"
 
 		rows, err := db.Query(sqlstring,xis_checkout,xcustomer_id,xsales_id)
 		defer rows.Close()
