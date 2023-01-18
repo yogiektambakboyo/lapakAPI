@@ -396,7 +396,79 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select ps.id,ps.remark as product_name,pb.remark as brand_name,u.remark as uom,pp.price,coalesce(od.qty,0) as qty  from product_sku ps join product_brand pb on pb.id = ps.brand_id join product_uom pu on pu.product_id = ps.id join uom u on u.id = pu.uom_id join product_distribution pd on pd.product_id = ps.id and pd.active = 1	join sales s on s.branch_id = pd.branch_id and s.id = $1	join customers c on c.sales_id = s.id and c.id = $2 join product_price pp on pp.product_id = ps.id and pp.branch_id = pd.branch_id left join order_master om on om.customers_id = c.id and om.dated = now()::date left join order_detail od on od.order_no = om.order_no order by ps.remark"
+		sqlstring = " select ps.id,ps.remark as product_name,pb.remark as brand_name,u.remark as uom,pp.price,coalesce(od.qty,0) as qty  from product_sku ps join product_brand pb on pb.id = ps.brand_id join product_uom pu on pu.product_id = ps.id join uom u on u.id = pu.uom_id join product_distribution pd on pd.product_id = ps.id and pd.active = 1	join sales s on s.branch_id = pd.branch_id and s.id = $1	join customers c on c.sales_id = s.id and c.id = $2 join product_price pp on pp.product_id = ps.id and pp.branch_id = pd.branch_id left join order_master om on om.customers_id = c.id and om.dated = now()::date  and is_checkout=0 left join order_detail od on od.order_no = om.order_no order by ps.remark"
+
+		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var id string
+		var product_name string
+		var brand_name string
+		var uom string
+		var price string
+		var qty string
+		var counter int
+
+		var results []productOrder
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&id,&product_name,&brand_name,&uom,&price,&qty)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := productOrder{
+				Id: id,
+				Product_name: product_name,
+				Brand_name: brand_name,
+				Uom: uom,
+				Price: price,
+				Qty: qty,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colProductOrder{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colProductOrder{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/getProductOrderCheckout", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xcustomer_id := c.PostForm("customer_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select ps.id,ps.remark as product_name,pb.remark as brand_name,u.remark as uom,pp.price,coalesce(od.qty,0) as qty  from product_sku ps join product_brand pb on pb.id = ps.brand_id join product_uom pu on pu.product_id = ps.id join uom u on u.id = pu.uom_id join product_distribution pd on pd.product_id = ps.id and pd.active = 1	join sales s on s.branch_id = pd.branch_id and s.id = $1	join customers c on c.sales_id = s.id and c.id = $2 join product_price pp on pp.product_id = ps.id and pp.branch_id = pd.branch_id join order_master om on om.customers_id = c.id and om.dated = now()::date and is_checkout=0 join order_detail od on od.order_no = om.order_no order by ps.remark"
 
 		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id)
 		if err != nil {
