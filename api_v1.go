@@ -45,6 +45,15 @@ type productOrder struct {
 	Id    string `json:"id"`
 }
 
+type orderSales struct {
+	Product_id  string `json:"product_id"`
+	Total   string `json:"total"`
+	Seq   string `json:"seq"`
+	Price     string `json:"price"`
+	Qty string `json:"qty"`
+	Id    string `json:"id"`
+}
+
 type colProductOrder struct {
 	Message     string        `json:"message"`
 	Data []productOrder `json:"data"`
@@ -1002,6 +1011,73 @@ func setupRouter() *gin.Engine {
 			}
 
 			defer rowsupd.Close()
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	
+	r.POST("/insertOrder", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xorder_no := c.PostForm("order_no")
+		xcustomers_id := c.PostForm("customers_id")
+		xtotal := c.PostForm("total")
+
+		//Product_id  string `json:"product_id"`
+		//Total   string `json:"total"`
+		//Seq   string `json:"seq"`
+		//Price     string `json:"price"`
+		//Qty string `json:"qty"`
+		//Id    string `json:"id"`
+
+		var datas []orderSales
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := c.BindJSON(&datas)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
+
+		rows, err := db.Query(sqlstring,xorder_no,xcustomers_id,xtotal,xsales_id)
+		defer rows.Close()
+		if err != nil {
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert order master",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			//sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
+			//rowsupd, errupd := db.Query(sqlstring,xsales_id,xtrip_id)
+
+			//if errupd != nil {
+			//	log.Fatal(err)
+			//}
+
+			//defer rowsupd.Close()
 			defer db.Close()
 			colInit := colActiveTrip{
 				Message:     "OK",
