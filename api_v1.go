@@ -1347,6 +1347,34 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.POST("/confirmOrder", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xcustomers_id := c.PostForm("customers_id")
+		xorder_no := c.PostForm("order_no")
+		xdelivery_date := c.PostForm("delivery_date")
+		xnotes := c.PostForm("notes")
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = "  	UPDATE order_master set is_checkout=1,remark=$1,delivery_date=$2 where order_no=$3 and customers_id=$4 and sales_id=$5;		"
+
+		rowsweek, errweek := db.Query(sqlstring,&xnotes,&xdelivery_date,&xorder_no,&xcustomers_id,&xsales_id)
+		if errweek != nil {
+			panic(errweek)
+		}
+
+		defer rowsweek.Close()
+		defer db.Close()
+
+		c.String(http.StatusOK, "1")
+	})
+
 	
 	r.POST("/getWeekNo", func(c *gin.Context) {
 
