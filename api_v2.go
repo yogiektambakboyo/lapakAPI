@@ -1076,12 +1076,18 @@ func setupRouter() *gin.Engine {
 			// obj is a JsonObject
 			for i := range datas {
 				obj := datas[i]
+				
+				fmt.Println("Id "+obj.Id);
+				fmt.Println("Qty "+obj.Qty);
+				fmt.Println("Price "+obj.Price);
+				fmt.Println("Total "+obj.Total);
+				fmt.Println("Seq "+obj.Seq);
 
 				sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
 				rowsupd, errupd := db.Query(obj.Order_no,obj.Id,obj.Qty,obj.Price,obj.Total,obj.Seq)
 	
 				if errupd != nil {
-					log.Fatal(err)
+					log.Fatal(errupd)
 				}
 	
 				defer rowsupd.Close()
