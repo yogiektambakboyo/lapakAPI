@@ -1044,6 +1044,8 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err)
 		}
 
+		fmt.Println(datas)
+
 		var results []activeTrip
 
 		dbname = sellerDivision(xsales_id)
