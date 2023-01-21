@@ -426,6 +426,24 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
+		sqlstring = " DELETE FROM public.order_detail WHERE order_no in (select order_no from order_master where customers_id = $1 and is_checkout = 0);	"
+		rowsdel, errdel := db.Query(sqlstring,obj.Customers_id)
+
+		if errdel != nil {
+			log.Fatal(errdel)
+		}
+
+		defer rowsdel.Close()
+
+		sqlstring = " DELETE FROM order_master where customers_id = $1 and is_checkout = 0);	"
+		rowsdelm, errdelm := db.Query(sqlstring,obj.Customers_id)
+
+		if errdelm != nil {
+			log.Fatal(errdel)
+		}
+
+		defer rowsdelm.Close()
+
 		sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
 
 		rows, err := db.Query(sqlstring,datas[0].Order_no,datas[0].Customers_id,datas[0].Total,datas[0].Sales_id)
