@@ -1350,8 +1350,6 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("/confirmOrder", func(c *gin.Context) {
-		xsales_id := c.PostForm("sales_id")
-		xcustomers_id := c.PostForm("customers_id")
 		xorder_no := c.PostForm("order_no")
 		xdelivery_date := c.PostForm("delivery_date")
 		xnotes := c.PostForm("notes")
