@@ -86,6 +86,7 @@ type activeVisit struct {
 	Id    string `json:"id"`
 	Customer_Id    string `json:"customer_id"`
 	Is_checkout    string `json:"is_checkout"`
+	Sales_vol    string `json:"sales_vol"`
 }
 
 type colActiveTrip struct {
@@ -647,7 +648,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select id,dated,customer_id,to_char(time_start,'dd-mm-YYYY HH24:mi') as time_start,to_char(time_end,'dd-mm-YYYY HH24:mi')  as time_end,georeverse,longitude,latitude,coalesce(is_checkout,0) as is_checkout  from sales_visit sv where sv.dated = now()::date and customer_id = $1 and sales_id =$2 "
+		sqlstring = " select sum(coalesce(om.total,0)) as sales_vol,sv.id,sv.dated,customer_id,to_char(time_start,'dd-mm-YYYY HH24:mi') as time_start,to_char(time_end,'dd-mm-YYYY HH24:mi')  as time_end,georeverse,longitude,latitude,coalesce(sv.is_checkout,0) as is_checkout  from sales_visit sv left join order_master om on om.customers_id = sv.customer_id and om.dated = sv.dated group by sv.id,sv.dated,customer_id,to_char(time_start,'dd-mm-YYYY HH24:mi'),to_char(time_end,'dd-mm-YYYY HH24:mi'),georeverse,longitude,latitude,coalesce(sv.is_checkout,0) where sv.dated = now()::date and customer_id = $1 and sales_id =$2 "
 
 		rows, err := db.Query(sqlstring,xcustomer_id,xsales_id)
 		if err != nil {
@@ -665,6 +666,7 @@ func setupRouter() *gin.Engine {
 		var georeverse string
 		var customer_id string
 		var is_checkout string
+		var sales_vol string
 		var counter int
 
 		var results []activeVisit
@@ -672,7 +674,7 @@ func setupRouter() *gin.Engine {
 		counter = 0
 
 		for rows.Next() {
-			err = rows.Scan(&id,&dated,&customer_id,&time_start,&time_end,&georeverse,&longitude,&latitude,&is_checkout)
+			err = rows.Scan(&id,&sales_vol,&dated,&customer_id,&time_start,&time_end,&georeverse,&longitude,&latitude,&is_checkout)
 			if err != nil {
 				// handle this error
 				panic(err)
@@ -687,6 +689,7 @@ func setupRouter() *gin.Engine {
 				Georeverse: georeverse,
 				Customer_Id: customer_id,
 				Is_checkout: is_checkout,
+				Sales_vol: sales_vol,
 			}
 			results = append(results, result)
 			counter = counter + 1
