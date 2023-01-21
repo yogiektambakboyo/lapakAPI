@@ -459,7 +459,7 @@ func setupRouter() *gin.Engine {
 			}
 
 			sqlstring = " update order_master set is_checkout=1 where order_no=$1;"
-			rowsupdc, errupdc := db.Query(sqlstring,datas[0].Id)
+			rowsupdc, errupdc := db.Query(sqlstring,datas[0].Order_no)
 
 			if errupdc != nil {
 				log.Fatal(errupdc)
