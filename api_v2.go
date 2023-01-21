@@ -1052,7 +1052,34 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err)
 		}
 
-		fmt.Println(datas)
+		
+
+		var price string
+		var qty string
+		var id string
+		var order_no string
+		var sales_id string
+		var customers_id string
+		var total string
+
+		i := 0
+		count := datas.Size()
+		// obj is a JsonObject
+		for i < count {
+			obj := datas.ObjectAt(i)
+
+			price = obj.StringOf("price")
+			qty = obj.StringOf("qty")
+			id = obj.StringOf("id")
+			order_no = obj.StringOf("order_no")
+			sales_id = obj.StringOf("sales_id")
+			customers_id = obj.StringOf("customers_id")
+			total = obj.StringOf("total")
+	
+			fmt.Println(price)
+			obj.DisposeJsonObject()
+			i = i + 1
+		}
 
 		var results []activeTrip
 
