@@ -414,8 +414,6 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err)
 		}
 
-		fmt.Println("Id "+datas[0].Id) 
-
 		var results []activeTrip
 
 		dbname = sellerDivision("01")
@@ -458,14 +456,6 @@ func setupRouter() *gin.Engine {
 				i = i + 1
 			}
 
-			sqlstring = " update order_master set is_checkout=1 where order_no=$1;"
-			rowsupdc, errupdc := db.Query(sqlstring,datas[0].Order_no)
-
-			if errupdc != nil {
-				log.Fatal(errupdc)
-			}
-			defer rowsupdc.Close()
-			
 			defer db.Close()
 			colInit := colActiveTrip{
 				Message:     "OK",
