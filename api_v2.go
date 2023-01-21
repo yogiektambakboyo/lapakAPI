@@ -1062,22 +1062,25 @@ func setupRouter() *gin.Engine {
 		var customers_id string
 		var total string
 
-		i := 0
-		count := datas.Size()
 		// obj is a JsonObject
-		for i < count {
-			obj := datas.ObjectAt(i)
+		for i := range datas {
+			obj := datas[i]
 
-			price = obj.StringOf("price")
-			qty = obj.StringOf("qty")
-			id = obj.StringOf("id")
-			order_no = obj.StringOf("order_no")
-			sales_id = obj.StringOf("sales_id")
-			customers_id = obj.StringOf("customers_id")
-			total = obj.StringOf("total")
+			price = obj.Price
+			qty = obj.Qty
+			id = obj.Id
+			order_no = obj.Order_no
+			sales_id = obj.Sales_id
+			customers_id = obj.Customers_id
+			total = obj.Total
 	
 			fmt.Println(price)
-			obj.DisposeJsonObject()
+			fmt.Println(qty)
+			fmt.Println(id)
+			fmt.Println(order_no)
+			fmt.Println(sales_id)
+			fmt.Println(customers_id)
+			fmt.Println(total)
 			i = i + 1
 		}
 
