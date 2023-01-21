@@ -1366,7 +1366,7 @@ func setupRouter() *gin.Engine {
 
 		sqlstring = "  	UPDATE order_master set is_checkout=1,remark=$1,delivery_date=$2 where order_no=$3;		"
 
-		rowsweek, errweek := db.Query(sqlstring,&xnotes,&xdelivery_date,&xorder_no,&xcustomers_id,&xsales_id)
+		rowsweek, errweek := db.Query(sqlstring,&xnotes,&xdelivery_date,&xorder_no)
 		if errweek != nil {
 			panic(errweek)
 		}
