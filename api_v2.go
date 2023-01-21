@@ -1083,8 +1083,8 @@ func setupRouter() *gin.Engine {
 				fmt.Println("Total "+obj.Total);
 				fmt.Println("Seq "+obj.Seq);
 
-				sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
-				rowsupd, errupd := db.Query(obj.Order_no,obj.Id,obj.Qty,obj.Price,obj.Total,obj.Seq)
+				sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($1, $2, $3, $4, $5, $6);	"
+				rowsupd, errupd := db.Query(sqlstring,obj.Order_no,obj.Id,obj.Qty,obj.Price,obj.Total,obj.Seq)
 	
 				if errupd != nil {
 					log.Fatal(errupd)
