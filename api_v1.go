@@ -36,6 +36,20 @@ type activeTrip struct {
 	Id    string `json:"id"`
 }
 
+type productOrderCheckout struct {
+	Product_name  string `json:"product_name"`
+	Brand_name   string `json:"brand_name"`
+	Uom   string `json:"uom"`
+	Price     string `json:"price"`
+	Qty string `json:"qty"`
+	Id    string `json:"id"`
+	Order_no    string `json:"order_no"`
+	Sales_id    string `json:"sales_id"`
+	Customers_id    string `json:"customers_id"`
+	Total    string `json:"total"`
+	Seq   string `json:"seq"`
+}
+
 type productOrder struct {
 	Product_name  string `json:"product_name"`
 	Brand_name   string `json:"brand_name"`
@@ -391,6 +405,77 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	
+	r.POST("/insertOrder", func(c *gin.Context) {
+		var datas []productOrderCheckout
+
+		// Try to decode the request body into the struct. If there is an error,
+		// respond to the client with the error message and a 400 status code.
+		err := c.BindJSON(&datas)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var results []activeTrip
+
+		dbname = sellerDivision("01")
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
+
+		rows, err := db.Query(sqlstring,datas[0].Order_no,datas[0].Customers_id,datas[0].Total,datas[0].Sales_id)
+		defer rows.Close()
+		if err != nil {
+			//defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert order master",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+
+			// obj is a JsonObject
+			for i := range datas {
+				obj := datas[i]
+
+				sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($1, $2, $3, $4, $5, $6);	"
+				rowsupd, errupd := db.Query(sqlstring,obj.Order_no,obj.Id,obj.Qty,obj.Price,obj.Total,obj.Seq)
+	
+				if errupd != nil {
+					log.Fatal(errupd)
+				}
+	
+				defer rowsupd.Close()
+				i = i + 1
+			}
+
+			sqlstring = " update order_master set is_checkout=1 where order_no=$1;"
+			rowsupdc, errupdc := db.Query(sqlstring,datas[0].Id)
+
+			if errupdc != nil {
+				log.Fatal(errupdc)
+			}
+			defer rowsupdc.Close()
+			
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	r.POST("/getProductOrder", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
 		xcustomer_id := c.PostForm("customer_id")
@@ -405,7 +490,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select ps.id,ps.remark as product_name,pb.remark as brand_name,u.remark as uom,pp.price,coalesce(od.qty,0) as qty  from product_sku ps join product_brand pb on pb.id = ps.brand_id join product_uom pu on pu.product_id = ps.id join uom u on u.id = pu.uom_id join product_distribution pd on pd.product_id = ps.id and pd.active = 1	join sales s on s.branch_id = pd.branch_id and s.id = $1	join customers c on c.sales_id = s.id and c.id = $2 join product_price pp on pp.product_id = ps.id and pp.branch_id = pd.branch_id left join order_master om on om.customers_id = c.id and om.dated = now()::date  and is_checkout=0 left join order_detail od on od.order_no = om.order_no order by ps.remark"
+		sqlstring = " select ps.id,ps.remark as product_name,pb.remark as brand_name,u.remark as uom,pp.price,coalesce(od.qty,0) as qty  from product_sku ps join product_brand pb on pb.id = ps.brand_id join product_uom pu on pu.product_id = ps.id join uom u on u.id = pu.uom_id join product_distribution pd on pd.product_id = ps.id and pd.active = 1	join sales s on s.branch_id = pd.branch_id and s.id = $1	join customers c on c.sales_id = s.id and c.id = $2 join product_price pp on pp.product_id = ps.id and pp.branch_id = pd.branch_id left join order_master om on om.customers_id = c.id and om.dated = now()::date  and is_checkout=0 left join order_detail od on od.order_no = om.order_no and od.product_id = ps.id order by ps.remark"
 
 		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id)
 		if err != nil {
@@ -1021,72 +1106,7 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
-	
-	r.POST("/insertOrder", func(c *gin.Context) {
-		xsales_id := c.PostForm("sales_id")
-		xorder_no := c.PostForm("order_no")
-		xcustomers_id := c.PostForm("customers_id")
-		xtotal := c.PostForm("total")
 
-		//Product_id  string `json:"product_id"`
-		//Total   string `json:"total"`
-		//Seq   string `json:"seq"`
-		//Price     string `json:"price"`
-		//Qty string `json:"qty"`
-		//Id    string `json:"id"`
-
-		var datas []orderSales
-
-		// Try to decode the request body into the struct. If there is an error,
-		// respond to the client with the error message and a 400 status code.
-		err := c.BindJSON(&datas)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var results []activeTrip
-
-		dbname = sellerDivision(xsales_id)
-		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-		db, err := sql.Open("postgres", psqlInfo)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var sqlstring string
-
-		sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
-
-		rows, err := db.Query(sqlstring,xorder_no,xcustomers_id,xtotal,xsales_id)
-		defer rows.Close()
-		if err != nil {
-			defer db.Close()
-			colInit := colActiveTrip{
-				Message:  "Failed insert order master",
-				Data: results,
-				Status:      "0",
-			}
-			c.JSON(http.StatusOK, colInit)
-			
-		}else{
-			//sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
-			//rowsupd, errupd := db.Query(sqlstring,xsales_id,xtrip_id)
-
-			//if errupd != nil {
-			//	log.Fatal(err)
-			//}
-
-			//defer rowsupd.Close()
-			defer db.Close()
-			colInit := colActiveTrip{
-				Message:     "OK",
-				Data: results,
-				Status:      "1",
-			}
-			c.JSON(http.StatusOK, colInit)
-		}
-	})
 
 	r.POST("/insertTrip", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
