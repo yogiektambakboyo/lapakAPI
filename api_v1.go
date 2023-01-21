@@ -201,8 +201,6 @@ type masterData struct {
 func sellerDivision(sellercode string) string {
 	var dbselected string
 	dbselected = "smd"
-	fmt.Println(dbselected)
-	fmt.Println(sellercode)
 	return dbselected
 }
 
