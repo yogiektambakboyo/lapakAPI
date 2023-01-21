@@ -435,11 +435,11 @@ func setupRouter() *gin.Engine {
 
 		defer rowsdel.Close()
 
-		sqlstring = " DELETE FROM order_master where customers_id = $1 and is_checkout = 0);	"
+		sqlstring = " DELETE FROM order_master where customers_id = $1 and is_checkout = 0;	"
 		rowsdelm, errdelm := db.Query(sqlstring,datas[0].Customers_id)
 
 		if errdelm != nil {
-			log.Fatal(errdel)
+			log.Fatal(errdelm)
 		}
 
 		defer rowsdelm.Close()
