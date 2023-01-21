@@ -56,6 +56,7 @@ type productOrderCheckout struct {
 	Sales_id    string `json:"sales_id"`
 	Customers_id    string `json:"customers_id"`
 	Total    string `json:"total"`
+	Seq   string `json:"seq"`
 }
 
 type orderSales struct {
@@ -1036,13 +1037,6 @@ func setupRouter() *gin.Engine {
 
 	
 	r.POST("/insertOrder", func(c *gin.Context) {
-		//Product_id  string `json:"product_id"`
-		//Total   string `json:"total"`
-		//Seq   string `json:"seq"`
-		//Price     string `json:"price"`
-		//Qty string `json:"qty"`
-		//Id    string `json:"id"`
-
 		var datas []productOrderCheckout
 
 		// Try to decode the request body into the struct. If there is an error,
@@ -1052,54 +1046,22 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err)
 		}
 
-		
-
-		var price string
-		var qty string
-		var id string
-		var order_no string
-		var sales_id string
-		var customers_id string
-		var total string
-
-		// obj is a JsonObject
-		for i := range datas {
-			obj := datas[i]
-
-			price = obj.Price
-			qty = obj.Qty
-			id = obj.Id
-			order_no = obj.Order_no
-			sales_id = obj.Sales_id
-			customers_id = obj.Customers_id
-			total = obj.Total
-	
-			fmt.Println(price)
-			fmt.Println(qty)
-			fmt.Println(id)
-			fmt.Println(order_no)
-			fmt.Println(sales_id)
-			fmt.Println(customers_id)
-			fmt.Println(total)
-			i = i + 1
-		}
-
 		var results []activeTrip
 
-		//dbname = sellerDivision(xsales_id)
-		//psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+		dbname = sellerDivision("01")
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
-		//db, err := sql.Open("postgres", psqlInfo)
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		//var sqlstring string
+		var sqlstring string
 
-		//sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
+		sqlstring = " INSERT INTO public.order_master (order_no, dated, customers_id, total, sales_id) VALUES($1, now()::date, $2, $3, $4); "
 
-		//rows, err := db.Query(sqlstring,xorder_no,xcustomers_id,xtotal,xsales_id)
-		//defer rows.Close()
+		rows, err := db.Query(sqlstring,datas[0].Order_no,datas[0].Customers_id,datas[0].Total,datas[0].Sales_id)
+		defer rows.Close()
 		if err != nil {
 			//defer db.Close()
 			colInit := colActiveTrip{
@@ -1110,15 +1072,24 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, colInit)
 			
 		}else{
-			//sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
-			//rowsupd, errupd := db.Query(sqlstring,xsales_id,xtrip_id)
 
-			//if errupd != nil {
-			//	log.Fatal(err)
-			//}
+			// obj is a JsonObject
+			for i := range datas {
+				obj := datas[i]
 
-			//defer rowsupd.Close()
-			//defer db.Close()
+				sqlstring = " INSERT INTO public.order_detail(order_no, product_id, qty, price, total, seq) VALUES($order_no, $product_id, $qty, $price, $total, $seq);	"
+				rowsupd, errupd := db.Query(obj.Order_no,obj.Id,obj.Qty,obj.Price,obj.Total,obj.Seq)
+	
+				if errupd != nil {
+					log.Fatal(err)
+				}
+	
+				defer rowsupd.Close()
+				i = i + 1
+			}
+			
+
+			defer db.Close()
 			colInit := colActiveTrip{
 				Message:     "OK",
 				Data: results,
