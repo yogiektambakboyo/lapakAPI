@@ -45,6 +45,19 @@ type productOrder struct {
 	Id    string `json:"id"`
 }
 
+type productOrderCheckout struct {
+	Product_name  string `json:"product_name"`
+	Brand_name   string `json:"brand_name"`
+	Uom   string `json:"uom"`
+	Price     string `json:"price"`
+	Qty string `json:"qty"`
+	Id    string `json:"id"`
+	Order_no    string `json:"order_no"`
+	Sales_id    string `json:"sales_id"`
+	Customers_id    string `json:"customers_id"`
+	Total    string `json:"total"`
+}
+
 type orderSales struct {
 	Product_id  string `json:"product_id"`
 	Total   string `json:"total"`
@@ -1030,7 +1043,7 @@ func setupRouter() *gin.Engine {
 		//Qty string `json:"qty"`
 		//Id    string `json:"id"`
 
-		var datas []orderSales
+		var datas []productOrderCheckout
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
