@@ -416,7 +416,7 @@ func setupRouter() *gin.Engine {
 			log.Fatal(err)
 		}
 
-		fmt.Println(datas) 
+		fmt.Println("Id "+datas[0].Id) 
 
 		var results []activeTrip
 
