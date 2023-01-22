@@ -505,7 +505,7 @@ func setupRouter() *gin.Engine {
 	r.POST("/getOrderDetail", func(c *gin.Context) {
 		xorder_no := c.PostForm("order_no")
 
-		dbname = sellerDivision(xsales_id)
+		dbname = sellerDivision(xorder_no)
 		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 		db, err := sql.Open("postgres", psqlInfo)
