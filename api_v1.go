@@ -538,7 +538,7 @@ func setupRouter() *gin.Engine {
 		counter = 0
 
 		for rows.Next() {
-			err = rows.Scan(&customer_name,&order_no,&total)
+			err = rows.Scan(&customer_name,&order_no,&total,&product_name,&qty,&price,&product_total)
 			if err != nil {
 				// handle this error
 				panic(err)
