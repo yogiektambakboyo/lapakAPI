@@ -503,7 +503,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("/getOrderDetail", func(c *gin.Context) {
-		xsales_id := c.PostForm("sales_id")
+		xorder_no := c.PostForm("order_no")
 
 		dbname = sellerDivision(xsales_id)
 		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -517,7 +517,7 @@ func setupRouter() *gin.Engine {
 
 		sqlstring = " select c.name as customer_name,om.order_no,om.total,ps.remark as product_name,od.qty,od.price,od.total as product_total  from order_master om join order_detail od on od.order_no = om.order_no join customers c on c.id = om.customers_id join product_sku ps on ps.id = od.product_id where om.order_no = $1 order by c.name"
 
-		rows, err := db.Query(sqlstring,xsales_id)
+		rows, err := db.Query(sqlstring,xorder_no)
 		if err != nil {
 			panic(err)
 		}
