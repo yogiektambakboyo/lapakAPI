@@ -70,6 +70,34 @@ type orderSales struct {
 	Id    string `json:"id"`
 }
 
+type orderMaster struct {
+	Customer_name  string `json:"customer_name"`
+	Order_no   string `json:"order_no"`
+	Total   string `json:"total"`
+}
+
+type orderDetail struct {
+	Product_name  string `json:"product_name"`
+	Qty  string `json:"qty"`
+	Price  string `json:"price"`
+	Product_total  string `json:"product_total"`
+	Customer_name  string `json:"customer_name"`
+	Order_no   string `json:"order_no"`
+	Total   string `json:"total"`
+}
+
+type colOrderDetail struct {
+	Message     string        `json:"message"`
+	Data []orderDetail `json:"data"`
+	Status      string        `json:"status"`
+}
+
+type colOrderMaster struct {
+	Message     string        `json:"message"`
+	Data []orderMaster `json:"data"`
+	Status      string        `json:"status"`
+}
+
 type colProductOrder struct {
 	Message     string        `json:"message"`
 	Data []productOrder `json:"data"`
@@ -398,6 +426,147 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, colInit)
 		}else{
 			colInit := colActiveTrip{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	
+	r.POST("/getOrderToday", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xdated := c.PostForm("dated")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select c.name as customer_name,om.order_no,om.total  from order_master om join customers c on c.id = om.customers_id  where om.dated = $1 and c.sales_id=$2 order by c.name"
+
+		rows, err := db.Query(sqlstring,xdated,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var customer_name string
+		var order_no string
+		var total string
+		var counter int
+
+		var results []orderMaster
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&customer_name,&order_no,&total)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := orderMaster{
+				Customer_name : customer_name,
+				Order_no : order_no,
+				Total : total,
+
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colOrderMaster{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colOrderMaster{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/getOrderDetail", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select c.name as customer_name,om.order_no,om.total,ps.remark as product_name,od.qty,od.price,od.total as product_total  from order_master om join order_detail od on od.order_no = om.order_no join customers c on c.id = om.customers_id join product_sku ps on ps.id = od.product_id where om.order_no = $1 order by c.name"
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var customer_name string
+		var order_no string
+		var total string
+		var product_total string
+		var product_name string
+		var qty string
+		var price string
+		var counter int
+
+		var results []orderDetail
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&customer_name,&order_no,&total)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := orderDetail{
+				Customer_name : customer_name,
+				Order_no : order_no,
+				Total : total,
+				Product_total : product_total,
+				Qty : qty,
+				Price : price,
+				Product_name : product_name,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colOrderDetail{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colOrderDetail{
 				Message:     "Failed, Data not found",
 				Data: results,
 				Status:      "0",
