@@ -449,7 +449,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select c.name as customer_name,om.order_no,om.total  from order_master om join customers c on c.id = om.customers_id  where om.dated = $1 and c.sales_id=$2 order by c.name"
+		sqlstring = " select c.name as customer_name,om.order_no,sum(od.total) as total  from order_master om join customers c on c.id = om.customers_id join order_detail od on od.order_no=om.order_no  where om.dated = $1 and c.sales_id=$2 group by  c.name,om.order_no order by c.name"
 
 		rows, err := db.Query(sqlstring,xdated,xsales_id)
 		if err != nil {
