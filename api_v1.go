@@ -1152,7 +1152,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,c.address,c.visit_day,c.visit_week,0 as isvisit  from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id  where c.sales_id = $1 and cs.remark like '%NOO%' "
+		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,c.address,c.visit_day,c.visit_week,0 as isvisit  from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id and cs.remark like '%NOO%'  where c.sales_id = $1 ; "
 
 		rows, err := db.Query(sqlstring,xsales_id)
 		if err != nil {
