@@ -1107,6 +1107,87 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	
+	r.POST("/getStoreNOO", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,c.address,c.visit_day,c.visit_week,0 as isvisit  from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id  where c.sales_id = $1 and cs.remark not like '%NOO%' "
+
+		rows, err := db.Query(sqlstring,xsales_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var branch_name string
+		var branch_id string
+		var sales_id string
+		var sales_name string
+		var customer_id string
+		var customer_name string
+		var address string
+		var visit_day string
+		var visit_week string
+		var isvisit string
+
+		var counter int
+
+		var results []storeVisit
+
+		counter = 0
+
+		for rows.Next() {
+			err = rows.Scan(&branch_name,&branch_id,&sales_id,&sales_name,&customer_id,&customer_name,&address,&visit_day,&visit_week,&isvisit)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := storeVisit{
+				Branch_name: branch_name,
+				Branch_id: branch_id,
+				Sales_id: sales_id,
+				Sales_name: sales_name,
+				Customer_id: customer_id,
+				Customer_name: customer_name,
+				Address: address,
+				Visit_day: visit_day,
+				Visit_week: visit_week,
+				Isvisit: isvisit,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colStoreVisit{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colStoreVisit{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
 	r.POST("/getActiveTripDetail", func(c *gin.Context) {
 		xsales_id := c.PostForm("sales_id")
 		xtrip_id := c.PostForm("trip_id")
