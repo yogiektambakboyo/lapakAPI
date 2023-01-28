@@ -36,6 +36,31 @@ type activeTrip struct {
 	Id    string `json:"id"`
 }
 
+type storeNOO struct {
+	Branch_name string `json:"branch_name"`
+	Branch_id string `json:"branch_id"`
+	Sales_id string `json:"sales_id"`
+	Sales_name string `json:"sales_name"`
+	Customer_id string `json:"customer_id"`
+	Customer_name string `json:"customer_name"`
+	Address string `json:"address"`
+	Visit_week string `json:"visit_week"`
+	City string `json:"city"`
+	Credit_limit string `json:"credit_limit"`
+	Longitude string `json:"longitude"`
+	Latitude string `json:"latitude"`
+	Email string `json:"email"`
+	Handphone string `json:"handphone"`
+	Whatsapp_no string `json:"whatsapp_no"`
+	Citizen_id string `json:"citizen_id"`
+	Tax_id string `json:"tax_id"`
+	Contact_person string `json:"contact_person"`
+	Type string `json:"type"`
+	Clasification string `json:"clasification"`
+	Contact_person_level string `json:"contact_person_level"`
+	Visit_day string `json:"visit_day"` 
+}
+
 type productOrderCheckout struct {
 	Product_name  string `json:"product_name"`
 	Brand_name   string `json:"brand_name"`
@@ -95,6 +120,12 @@ type colOrderDetail struct {
 type colOrderMaster struct {
 	Message     string        `json:"message"`
 	Data []orderMaster `json:"data"`
+	Status      string        `json:"status"`
+}
+
+type colStoreNOO struct {
+	Message     string        `json:"message"`
+	Data []storeNOO `json:"data"`
 	Status      string        `json:"status"`
 }
 
@@ -1121,7 +1152,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,c.address,c.visit_day,c.visit_week,0 as isvisit  from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id  where c.sales_id = $1 and cs.remark not like '%NOO%' "
+		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,c.address,c.visit_day,c.visit_week,0 as isvisit  from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id  where c.sales_id = $1 and cs.remark like '%NOO%' "
 
 		rows, err := db.Query(sqlstring,xsales_id)
 		if err != nil {
@@ -1183,6 +1214,166 @@ func setupRouter() *gin.Engine {
 				Message:     "Failed, Data not found",
 				Data: results,
 				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/getStoreNOODetail", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xcustomer_id := c.PostForm("customer_id")
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " select b.remark as branch_name,s.branch_id,s.id as sales_id,s.name as sales_name,c.id as customer_id,c.name as customer_name,coalesce(c.address,'') address,coalesce(c.visit_week,'') as visit_week,coalesce(c.city,'') city,coalesce(c.credit_limit,0) as credit_limit,coalesce(c.longitude,'') as longitude,coalesce(c.latitude,'') as latitude,coalesce(c.email,'') as email,coalesce(c.handphone,'') as handphone,coalesce(c.whatsapp_no,'') as whatsapp_no,coalesce(c.citizen_id,'') citizen_id,coalesce(c.tax_id,'') tax_id,coalesce(c.contact_person,'') as contact_person,coalesce(c.type,'') as type, coalesce(c.clasification,'') as clasification,coalesce(c.contact_person_level,'') as contact_person_level,coalesce(c.visit_day,'') visit_day from customers c join sales s on s.id = c.sales_id join branch b on b.id = s.branch_id join customers_segment cs on cs.id = c.segment_id  where c.sales_id = $1 and c.id = $2 and cs.remark like '%NOO%' "
+
+		rows, err := db.Query(sqlstring,xsales_id,xcustomer_id)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
+		var branch_name string
+		var branch_id string
+		var sales_id string
+		var sales_name string
+		var customer_id string
+		var customer_name string
+		var address string
+		var visit_week string
+		var city string
+		var credit_limit string
+		var longitude string
+		var latitude string
+		var email string
+		var handphone string
+		var whatsapp_no string
+		var citizen_id string
+		var tax_id string
+		var contact_person string
+		var types string
+		var clasification string
+		var contact_person_level string
+		var visit_day string
+
+		var counter int
+
+		var results []storeNOO
+
+		counter = 0
+		for rows.Next() {
+			err = rows.Scan(&branch_name,&branch_id,&sales_id,&sales_name,&customer_id,&customer_name,&address,&visit_week,&city,&credit_limit,&longitude,&latitude,&email,&handphone,&whatsapp_no,&citizen_id,&tax_id,&contact_person,	&types,&clasification,&contact_person_level,	&visit_day)
+			if err != nil {
+				// handle this error
+				panic(err)
+			}
+			result := storeNOO{
+				Branch_name: branch_name,
+				Branch_id: branch_id,
+				Sales_id: sales_id,
+				Sales_name: sales_name,
+				Customer_id: customer_id,
+				Customer_name: customer_name,
+				Address: address,
+				Visit_day: visit_day,
+				Visit_week: visit_week,
+				Credit_limit: credit_limit,
+				Longitude: longitude,
+				Latitude: latitude,
+				Email: email,
+				Handphone: handphone,
+				Whatsapp_no: whatsapp_no,
+				Citizen_id: citizen_id,
+				Tax_id: tax_id,
+				Contact_person: contact_person,
+				Clasification: clasification,
+				Contact_person_level: contact_person_level,
+				Type: types,
+			}
+			results = append(results, result)
+			counter = counter + 1
+		}
+
+		defer db.Close()
+
+		if(counter>0){
+			colInit := colStoreNOO{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}else{
+			colInit := colStoreNOO{
+				Message:     "Failed, Data not found",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+		}
+	})
+
+	r.POST("/updateNOO", func(c *gin.Context) {
+		xsales_id := c.PostForm("sales_id")
+		xcustomer_id := c.PostForm("customer_id")
+		xname := c.PostForm("name")
+		xaddress := c.PostForm("address")
+		xphone_no := c.PostForm("phone_no")
+		xcity := c.PostForm("city")
+		xcredit_limit := c.PostForm("credit_limit")
+		xemail := c.PostForm("email")
+		xhandphone := c.PostForm("handphone")
+		xwhatsapp_no := c.PostForm("whatsapp_no")
+		xcitizen_id := c.PostForm("citizen_id")
+		xtax_id := c.PostForm("tax_id")
+		xcontact_person := c.PostForm("contact_person")
+		xtype := c.PostForm("type")
+		xcontact_person_job_position := c.PostForm("contact_person_job_position")
+		xclasification := c.PostForm("clasification")
+		xlongitude := c.PostForm("longitude")
+		xlatitude := c.PostForm("latitude")
+		xcontact_person_level := c.PostForm("contact_person_level")
+		var results []activeTrip
+
+		dbname = sellerDivision(xsales_id)
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+		db, err := sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var sqlstring string
+
+		sqlstring = " update public.customers set name=$1, address=$2, phone_no=$3, city=$4, credit_limit=$5, longitude=$6, latitude=$7, email=$8, handphone=$9, whatsapp_no=$10, citizen_id=$11, tax_id=$12, contact_person=$13, type=$14, clasification=$15, contact_person_job_position=$16, contact_person_level=$17 where id=$18 and segment_id=2;"
+
+		rows, err := db.Query(sqlstring,xname,xaddress,xphone_no,xcity,xcredit_limit,xlongitude,xlatitude,xemail,xhandphone,xwhatsapp_no,xcitizen_id,xtax_id,xcontact_person,xtype,xclasification,xcontact_person_job_position,xcontact_person_level,xcustomer_id)
+		defer rows.Close()
+		if err != nil {
+			log.Fatal(err)
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:  "Failed insert reg detail",
+				Data: results,
+				Status:      "0",
+			}
+			c.JSON(http.StatusOK, colInit)
+			
+		}else{
+			defer db.Close()
+			colInit := colActiveTrip{
+				Message:     "OK",
+				Data: results,
+				Status:      "1",
 			}
 			c.JSON(http.StatusOK, colInit)
 		}
