@@ -1355,7 +1355,7 @@ func setupRouter() *gin.Engine {
 
 		var sqlstring string
 
-		sqlstring = " update public.customers set name=$1, address=$2, phone_no=$3, city=$4, credit_limit=$5, longitude=$6, latitude=$7, email=$8, handphone=$9, whatsapp_no=$10, citizen_id=$11, tax_id=$12, contact_person=$13, type=$14, clasification=$15, contact_person_job_position=$16, contact_person_level=$17 where id=$18 and segment_id=2;"
+		sqlstring = " update public.customers set segment_id=1,name=$1, address=$2, phone_no=$3, city=$4, credit_limit=$5, longitude=$6, latitude=$7, email=$8, handphone=$9, whatsapp_no=$10, citizen_id=$11, tax_id=$12, contact_person=$13, type=$14, clasification=$15, contact_person_job_position=$16, contact_person_level=$17 where id=$18 and segment_id=2;"
 
 		rows, err := db.Query(sqlstring,xname,xaddress,xphone_no,xcity,xcredit_limit,xlongitude,xlatitude,xemail,xhandphone,xwhatsapp_no,xcitizen_id,xtax_id,xcontact_person,xtype,xclasification,xcontact_person_job_position,xcontact_person_level,xcustomer_id)
 		defer rows.Close()
