@@ -1290,6 +1290,7 @@ func setupRouter() *gin.Engine {
 				Longitude: longitude,
 				Latitude: latitude,
 				Email: email,
+				City: city,
 				Handphone: handphone,
 				Whatsapp_no: whatsapp_no,
 				Citizen_id: citizen_id,
